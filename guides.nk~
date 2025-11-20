@@ -1,0 +1,755 @@
+#! /Applications/Nuke16.0v3/Nuke16.0v3.app/Contents/MacOS/libnuke-16.0.3.dylib -nx
+#write_info Write1 file:"" format:"3840 2160 1" chans:":rgba.red:rgba.green:rgba.blue:" framerange:"1 100" fps:"0" colorspace:"default (linear)" datatype:"16 bit half" transfer:"unknown" views:"main" colorManagement:"Nuke"
+version 16.0 v3
+define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
+<layout version="1.0">
+    <window x="0" y="39" w="1710" h="978" maximized="1" screen="0">
+        <splitter orientation="1">
+            <split size="40"/>
+            <dock id="" hideTitles="1" activePageId="Toolbar.1">
+                <page id="Toolbar.1"/>
+            </dock>
+            <split size="1174" stretch="1"/>
+            <splitter orientation="2">
+                <split size="721"/>
+                <dock id="" activePageId="Viewer.1">
+                    <page id="Viewer.1"/>
+                </dock>
+                <split size="237"/>
+                <dock id="" activePageId="DAG.1" focus="true">
+                    <page id="DAG.1"/>
+                    <page id="Curve Editor.1"/>
+                    <page id="DopeSheet.1"/>
+                    <page id="DAG.2"/>
+                    <page id="DAG.3"/>
+                </dock>
+            </splitter>
+            <split size="488"/>
+            <dock id="" activePageId="Properties.1">
+                <page id="Properties.1"/>
+                <page id="uk.co.thefoundry.backgroundrenderview.1"/>
+                <page id="Scenegraph.1"/>
+            </dock>
+        </splitter>
+    </window>
+</layout>
+}
+Root {
+ inputs 0
+ name /Users/cameronbriantarget/Local/guides.nk
+ frame 1009
+ format "3840 2160 0 0 3840 2160 1 UHD_4K"
+ proxy_type scale
+ proxy_format "1024 778 0 0 1024 778 1 1K_Super_35(full-ap)"
+ colorManagement Nuke
+ workingSpaceLUT linear
+ monitorLut sRGB
+ monitorOutLUT rec709
+ int8Lut sRGB
+ int16Lut sRGB
+ logLut Cineon
+ floatLut linear
+ free_type_font_path /Users/cameronbriantarget/Local/resources/fonts/
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode1
+ tile_color 0x55bfffff
+ label GUIDE
+ note_font_size 35
+ xpos -58
+ ypos -139
+ bdwidth 524
+ bdheight 256
+}
+StickyNote {
+ inputs 0
+ name StickyNote1
+ tile_color 0xccc2ff
+ gl_color 0x2bccbbff
+ label "<-- Adjust parameters here"
+ xpos 367
+ ypos -196
+}
+Expression {
+ inputs 0
+ expr0 "(frame <= (PIPELINE_INFORMATION.cut_in -1) || frame >= (PIPELINE_INFORMATION.cut_out +1)) ? 1 : 1\n"
+ expr1 "(frame <= (PIPELINE_INFORMATION.cut_in -1) || frame >= (PIPELINE_INFORMATION.cut_out +1)) ? 1 : 1\n"
+ expr2 "(frame <= (PIPELINE_INFORMATION.cut_in -1) || frame >= (PIPELINE_INFORMATION.cut_out +1)) ? 0 : 1"
+ channel3 rgba
+ name handles_color
+ xpos -157
+ ypos -4
+ hide_input true
+}
+CheckerBoard2 {
+ inputs 0
+ format "8192 6144 0 0 8192 6144 1 8K_CubeMap"
+ boxsize 25
+ color0 {0 0 0 1}
+ color0_panelDropped true
+ color1 {1 1 1 1}
+ color2 {0 0 0 0}
+ color3 {1 1 1 1}
+ linecolor {0.77763 1 0.086604 1}
+ centerlinecolor {0 0 0 0}
+ centerlinewidth 0
+ name CheckerBoard1
+ xpos 97
+ postage_stamp false
+}
+Read {
+ inputs 0
+ file_type exr
+ file /Users/cameronbriantarget/Local/resources/test_plates/plate/plate_####.exr
+ localizationPolicy on
+ format "3840 2160 0 0 3840 2160 1 UHD_4K"
+ first 1001
+ last 1030
+ origfirst 1001
+ origlast 1030
+ origset true
+ version 7
+ name read_in
+ xpos -267
+ ypos -225
+}
+set N4a197a00 [stack 0]
+Dot {
+ name Dot3
+ xpos -233
+ ypos -87
+}
+set N1d3e1000 [stack 0]
+push 0
+CopyMetaData {
+ inputs 2
+ mergeMode "Meta only"
+ name CopyMetaData2
+ xpos 260
+ ypos -90
+}
+NoOp {
+ name wh_control
+ xpos 260
+ ypos -58
+ addUserKnob {20 User}
+ addUserKnob {14 wh l "" +STARTLINE R 0 100}
+ wh {{(read_in.width)*(1/PIPELINE_INFORMATION.scale)} {((PIPELINE_INFORMATION.reformat_ratio.height)/(PIPELINE_INFORMATION.reformat_ratio.width))*(wh_control.wh.w)*(read_in.pixel_aspect) x1001 0 x1025 0}}
+}
+set N49334600 [stack 0]
+Rectangle {
+ cliptype none
+ area {{"(\[metadata input/width]-(wh_control.wh.w))/2" x1025 0} {(guide_outter.area.y)+(guide_outter.area.t-guide_outter.area.y)*(PIPELINE_INFORMATION.letterbox/PIPELINE_INFORMATION.reformat_ratio.height) x1025 0} {(area.x)+(wh_control.wh.w)} {(guide_outter.area.t)-(guide_outter.area.t-guide_outter.area.y)*(PIPELINE_INFORMATION.letterbox/PIPELINE_INFORMATION.reformat_ratio.height)}}
+ color {1 1 1 1}
+ name letterbox_outer
+ xpos -3
+ ypos -58
+}
+Rectangle {
+ inputs 0
+ cliptype none
+ area {{"letterbox_outer.area.x + 7\n" x1024 345.5} {"letterbox_outer.area.y + 10\n" x1024 172} {"letterbox_outer.area.r - 7" x1024 4254.5} {"letterbox_outer.area.t - 10\n" x1024 2888}}
+ color {1.333334 0.333334 1.333334 1}
+ color_panelDropped true
+ name letterbox_inner
+ xpos 96
+ ypos -31
+ hide_input true
+}
+Merge2 {
+ inputs 2
+ operation out
+ name Merge4
+ xpos -3
+ ypos 9
+}
+Merge2 {
+ inputs 2
+ operation multiply
+ name Merge7
+ xpos 97
+ ypos 28
+}
+push $N49334600
+Rectangle {
+ cliptype none
+ area {{"(\[metadata input/width]-(wh_control.wh.w))/2" x1025 0} {"(\[metadata input/height]-(wh_control.wh.h))/2" x1025 0} {(area.x)+(wh_control.wh.w)} {(area.y)+(wh_control.wh.h)}}
+ color {1 1 1 1}
+ name guide_outter
+ xpos 260
+ ypos -20
+}
+Rectangle {
+ inputs 0
+ cliptype none
+ area {{"guide_outter.area.x + 7\n\n" x1024 345.5} {"guide_outter.area.y + 10\n" x1024 172} {"guide_outter.area.r - 7" x1024 4254.5} {"guide_outter.area.t - 10\n" x1024 2888}}
+ color {1.333334 0.333334 1.333334 1}
+ color_panelDropped true
+ name guide_inner
+ xpos 367
+ ypos -20
+ hide_input true
+}
+Merge2 {
+ inputs 2
+ operation out
+ name Merge1
+ xpos 318
+ ypos 67
+}
+Merge2 {
+ inputs 2
+ operation under
+ name Merge6
+ xpos 97
+ ypos 67
+}
+Group {
+ name burnins2
+ note_font_size 15
+ xpos -32
+ ypos 61
+ addUserKnob {20 size l Size}
+ addUserKnob {41 translate l Offset T burnin_spacer.translate}
+ addUserKnob {7 font_scale l "Font Scale" R 0 2}
+ font_scale 0.9
+}
+ BackdropNode {
+  inputs 0
+  name Supported_Tokens
+  gl_color 0xff00ffff
+  label "\{sg_shot_code\}\n\{sg_asset_code\}\n\{sg_version_code\}\n\{sg_version_client_code\}\n\{sg_cut_in\} \{sg_cut_out\}\n\{sg_version_description\}\n\{sg_version_slate_notes\}\n\{sg_playlist_reason_for_review\}\n\{sg_playlist_code\}"
+  note_font Verdana
+  xpos 268
+  ypos 323
+  bdwidth 199
+  bdheight 146
+ }
+ BackdropNode {
+  inputs 0
+  name color_frame_counter
+  tile_color 0x328886ff
+  xpos 953
+  ypos 265
+  bdwidth 334
+  bdheight 294
+ }
+ BackdropNode {
+  inputs 0
+  name slate_info
+  tile_color 0x32365bff
+  note_font_size 42
+  xpos 590
+  ypos 321
+  bdwidth 98
+  bdheight 249
+ }
+ StickyNote {
+  inputs 0
+  name StickyNote1
+  tile_color 0xcca8ff
+  gl_color 0xb7ccff
+  label "<-- Do not delete"
+  note_font "Verdana Bold"
+  xpos 823
+  ypos 412
+ }
+ Input {
+  inputs 0
+  name Input1
+  xpos 444
+  ypos 219
+ }
+ Dot {
+  name Dot22
+  xpos 478
+  ypos 261
+ }
+set N1d44b200 [stack 0]
+ Dot {
+  name Dot23
+  xpos 633
+  ypos 261
+ }
+ Remove {
+  name Remove2
+  xpos 599
+  ypos 279
+ }
+set N1d3e5600 [stack 0]
+ Text2 {
+  font_size_toolbar 100
+  font_width_toolbar 100
+  font_height_toolbar 100
+  cliptype none
+  message "Baked Studios\n"
+  old_message {
+   {66 97 107 101 100 32 83 116 117 100 105 111 115 10}
+  }
+  box {{burnin_spacer.translate.x} {burnin_spacer.translate.y} 2000 400}
+  yjustify bottom
+  transforms {
+   {0 2}
+  }
+  cursor_position 13
+  font {{ Arial : Regular : arial.ttf : 0 }}
+  global_font_scale {{parent.font_scale}}
+  scale {1 1}
+  cursor_initialised true
+  autofit_bbox false
+  initial_cursor_position {
+   {21 79.5}
+  }
+  group_animations {
+   {0}
+   imported:
+   0
+   selected:
+   items:
+   "root transform"
+  }
+  animation_layers {
+   {1 11 1024 778 0 0 1 1 0 0 0 0}
+  }
+  color 0.7
+  background_opacity 0.75
+  enable_shadows true
+  shadow_angle -45
+  shadow_distance 2
+  shadow_softness 1
+  shadow_size 1
+  name bottom_left
+  note_font Verdana
+  note_font_size 14
+  xpos 599
+  ypos 347
+  disable true
+ }
+ Text2 {
+  font_size_toolbar 100
+  font_width_toolbar 100
+  font_height_toolbar 100
+  cliptype none
+  box {0 {burnin_spacer.translate.y} {format.r} 400}
+  xjustify center
+  yjustify bottom
+  transforms {
+   {0 2}
+  }
+  font {{ Arial : Regular : arial.ttf : 0 }}
+  global_font_scale {{parent.font_scale}}
+  scale {1 1}
+  cursor_initialised true
+  autofit_bbox false
+  initial_cursor_position {
+   {21 79.5}
+  }
+  group_animations {
+   {0}
+   imported:
+   0
+   selected:
+   items:
+   "root transform"
+  }
+  animation_layers {
+   {1 11 1024 778 0 0 1 1 0 0 0 0}
+  }
+  color 0.7
+  background_opacity 0.75
+  enable_shadows true
+  shadow_angle -45
+  shadow_distance 2
+  shadow_softness 1
+  shadow_size 1
+  name bottom_center
+  note_font_size 14
+  xpos 599
+  ypos 375
+  disable true
+ }
+ Text2 {
+  font_size_toolbar 100
+  font_width_toolbar 100
+  font_height_toolbar 100
+  cliptype none
+  message "\[format %04d \[expression \{\[frame] - 0\}]] / \[expression \{\[value read_in.last] \}]"
+  old_message {
+   {49 48 48 53 32 47 32 49 48 53 51}
+  }
+  old_expression_markers {
+   {0 3 7 10}
+  }
+  box {-2000 {burnin_spacer.translate.y} {"format.r - burnin_spacer.translate.x"} 400}
+  xjustify right
+  yjustify bottom
+  transforms {
+   {0 2}
+  }
+  font_size_values {
+   {0 100 1 100 2 100 3 100 0 99 1 99 2 99 3 99}
+  }
+  font {{ Arial : Regular : arial.ttf : 0 }}
+  global_font_scale {{parent.font_scale}}
+  center {1024 778}
+  cursor_initialised true
+  autofit_bbox false
+  initial_cursor_position {
+   {1879.5 70.5}
+  }
+  group_animations {
+   {0}
+   imported:
+   0
+   selected:
+   items:
+   "root transform/"
+  }
+  animation_layers {
+   {1 11 1024 778 0 0 1 1 0 0 0 0}
+  }
+  color 0.7
+  background_opacity 0.75
+  enable_shadows true
+  shadow_angle -45
+  shadow_distance 2
+  shadow_softness 1
+  shadow_size 1
+  name bottom_right
+  note_font_size 14
+  xpos 599
+  ypos 401
+  disable true
+ }
+ Text2 {
+  font_size_toolbar 100
+  font_width_toolbar 100
+  font_height_toolbar 100
+  cliptype none
+  message "\{sg_version_code\}ff"
+  old_message {
+   {123 115 103 95 118 101 114 115 105 111 110 95 99 111 100 101 125 102 102}
+  }
+  box {{burnin_spacer.translate.x} -200 2000 {"format.t - burnin_spacer.translate.y"}}
+  transforms {
+   {0 2}
+  }
+  font_size_values {
+   {0 100 1 100 2 100 0 99}
+  }
+  cursor_position 19
+  font {{ Arial : Regular : arial.ttf : 0 }}
+  global_font_scale {{parent.font_scale}}
+  center {1024 778}
+  cursor_initialised true
+  autofit_bbox false
+  initial_cursor_position {
+   {22 1062.5}
+  }
+  group_animations {
+   {0}
+   imported:
+   0
+   selected:
+   items:
+   "root transform/"
+  }
+  animation_layers {
+   {1 11 1024 778 0 0 1 1 0 0 0 0}
+  }
+  color 0.7
+  background_opacity 0.75
+  enable_shadows true
+  shadow_angle -45
+  shadow_distance 2
+  shadow_softness 1
+  shadow_size 1
+  name top_left
+  note_font_size 14
+  xpos 599
+  ypos 425
+  disable true
+ }
+ Text2 {
+  font_size_toolbar 100
+  font_width_toolbar 100
+  font_height_toolbar 100
+  cliptype none
+  box {0 -200 {format.r} {"format.t - burnin_spacer.translate.y"}}
+  xjustify center
+  transforms {
+   {0 2}
+  }
+  font {{ Arial : Regular : arial.ttf : 0 }}
+  global_font_scale {{parent.font_scale}}
+  center {1024 778}
+  cursor_initialised true
+  autofit_bbox false
+  initial_cursor_position {
+   {22 1062.5}
+  }
+  group_animations {
+   {0}
+   imported:
+   0
+   selected:
+   items:
+   "root transform/"
+  }
+  animation_layers {
+   {1 11 1024 778 0 0 1 1 0 0 0 0}
+  }
+  color 0.7
+  background_opacity 0.75
+  enable_shadows true
+  shadow_angle -45
+  shadow_distance 2
+  shadow_softness 1
+  shadow_size 1
+  name top_center
+  note_font_size 14
+  xpos 599
+  ypos 455
+  disable true
+ }
+ Text2 {
+  font_size_toolbar 100
+  font_width_toolbar 100
+  font_height_toolbar 100
+  cliptype none
+  message "\[date %Y]/\[date %m]/\[date %d]"
+  old_message {
+   {50 48 50 52 47 49 48 47 48 51}
+  }
+  old_expression_markers {
+   {0 3 5 6 8 9}
+  }
+  box {-2000 -200 {"format.r - burnin_spacer.translate.x"} {"format.t - burnin_spacer.translate.y"}}
+  xjustify right
+  transforms {
+   {0 2}
+  }
+  font_size_values {
+   {5 100 6 100 7 100 8 100 9 100 5 99 6 99 7 99 8 99 9 99}
+  }
+  cursor_position 29
+  font {{ Arial : Regular : arial.ttf : 0 }}
+  global_font_scale {{parent.font_scale}}
+  center {1024 778}
+  cursor_initialised true
+  autofit_bbox false
+  initial_cursor_position {
+   {1896 1063.5}
+  }
+  group_animations {
+   {0}
+   imported:
+   0
+   selected:
+   items:
+   "root transform/"
+  }
+  animation_layers {
+   {1 11 1024 778 0 0 1 1 0 0 0 0}
+  }
+  color 0.7
+  background_opacity 0.75
+  enable_shadows true
+  shadow_angle -45
+  shadow_distance 2
+  shadow_softness 1
+  shadow_size 1
+  name top_right
+  note_font_size 14
+  xpos 599
+  ypos 479
+  disable true
+ }
+push $N1d3e5600
+ Dot {
+  name Dot1
+  xpos 1182
+  ypos 286
+ }
+ Text2 {
+  font_size_toolbar 100
+  font_width_toolbar 100
+  font_height_toolbar 100
+  cliptype none
+  message "\[format %04d \[expression \{\[frame] - 0\}]] / \[expression \{\[value read_in.last] \}]\n"
+  old_message {
+   {48 48 48 49 32 47 32 49 48 51 48 10}
+  }
+  old_expression_markers {
+   {0 3 7 10}
+  }
+  box {-2000 {burnin_spacer.translate.y} {"format.r - burnin_spacer.translate.x"} 400}
+  xjustify right
+  yjustify bottom
+  transforms {
+   {0 2}
+  }
+  font_size_values {
+   {0 100 1 100 2 100 3 100 0 99 1 99 2 99 3 99}
+  }
+  cursor_position 79
+  font {{ Arial : Regular : arial.ttf : 0 }}
+  global_font_scale {{parent.font_scale}}
+  center {1024 778}
+  cursor_initialised true
+  autofit_bbox false
+  initial_cursor_position {
+   {1879.5 70.5}
+  }
+  group_animations {
+   {0}
+   imported:
+   0
+   selected:
+   items:
+   "root transform/"
+  }
+  animation_layers {
+   {1 11 1024 778 0 0 1 1 0 0 0 0}
+  }
+  color 0.7
+  background_opacity 0.75
+  enable_shadows true
+  shadow_angle -45
+  shadow_distance 2
+  shadow_softness 1
+  shadow_size 1
+  name FRAMECOUNTER1
+  xpos 1148
+  ypos 367
+ }
+ Dot {
+  name Dot2
+  xpos 1182
+  ypos 513
+ }
+ Merge2 {
+  inputs 2
+  name Merge2
+  xpos 599
+  ypos 510
+ }
+ Dot {
+  name Dot12
+  xpos 633
+  ypos 544
+ }
+push $N1d44b200
+ Merge2 {
+  inputs 2
+  mix {{curve x1000 0 1}}
+  name Merge3
+  xpos 444
+  ypos 541
+ }
+ Output {
+  name Output1
+  xpos 444
+  ypos 590
+ }
+ Transform {
+  inputs 0
+  translate {{"letterbox_inner.area.x +10"} {"letterbox_inner.area.y +15"}}
+  black_outside false
+  name burnin_spacer
+  xpos 735
+  ypos 413
+ }
+end_group
+Merge2 {
+ inputs 2
+ operation multiply
+ name Merge3
+ xpos -157
+ ypos 67
+}
+set N1d408800 [stack 0]
+push $N1d3e1000
+Merge2 {
+ inputs 2
+ mix 0.215
+ name Merge2
+ xpos -267
+ ypos 67
+}
+Write {
+ file_type exr
+ first_part rgba
+ version 2
+ ocioColorspace scene_linear
+ display default
+ view sRGB
+ name Write1
+ xpos -267
+ ypos 171
+}
+push $N1d408800
+Viewer {
+ frame 1009
+ frame_range 1-100
+ monitorOutNDISenderName "Nuke - guides - Viewer1"
+ monitorOutOutputTransform rec709
+ name Viewer1
+ xpos -157
+ ypos 139
+}
+push $N4a197a00
+Group {
+ name PIPELINE_INFORMATION
+ note_font_size 14
+ xpos 261
+ ypos -202
+ hide_input true
+ addUserKnob {20 Reformat}
+ addUserKnob {3 cut_in l "Cut In"}
+ cut_in {{read_in.first_frame+8}}
+ addUserKnob {3 cut_out l "Cut Out"}
+ cut_out {{read_in.last_frame-7}}
+ addUserKnob {41 scale l "Shot Scale Factor" t "For Shot Scale Factor from ShotGrid" T scale1.scale}
+ addUserKnob {7 letterbox l "Letterbox Size" R 0 500}
+ letterbox 135
+}
+ Input {
+  inputs 0
+  name Input
+  xpos 285
+  ypos -195
+ }
+ Reformat {
+  format "1920 1080 0 0 1920 1080 1 HD_1080"
+  name reformat_ratio
+  xpos 285
+  ypos -107
+ }
+ Transform {
+  scale 1.2
+  center {{width/2} {height/2}}
+  name scale1
+  xpos 285
+  ypos -49
+ }
+ Crop {
+  box {{format.x} {letterbox} {format.r} {(format.t)-(crop1.box.y)}}
+  name crop1
+  xpos 285
+  ypos -1
+ }
+ Crop {
+  box {{format.x} {format.y} {format.r} {format.t}}
+  crop false
+  name crop_final1
+  xpos 285
+  ypos 43
+ }
+ Output {
+  name Output1
+  xpos 285
+  ypos 133
+ }
+end_group

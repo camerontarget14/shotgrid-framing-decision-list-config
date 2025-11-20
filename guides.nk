@@ -1,0 +1,783 @@
+#! /Applications/Nuke16.0v4/Nuke16.0v4.app/Contents/MacOS/libnuke-16.0.4.dylib -nx
+#write_info Write1 file:"" format:"4096 2304 1" chans:":rgba.red:rgba.green:rgba.blue:" framerange:"1001 1178" fps:"0" colorspace:"default (linear)" datatype:"16 bit half" transfer:"unknown" views:"main" colorManagement:"Nuke"
+version 16.0 v4
+define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
+<layout version="1.0">
+    <window x="0" y="31" w="2560" h="1305" maximized="1" screen="0">
+        <splitter orientation="1">
+            <split size="40"/>
+            <dock id="" hideTitles="1" activePageId="Toolbar.1">
+                <page id="Toolbar.1"/>
+            </dock>
+            <split size="1897" stretch="1"/>
+            <splitter orientation="2">
+                <split size="722"/>
+                <dock id="" activePageId="Viewer.1">
+                    <page id="Viewer.1"/>
+                </dock>
+                <split size="563"/>
+                <dock id="" activePageId="DAG.1" focus="true">
+                    <page id="DAG.1"/>
+                    <page id="Curve Editor.1"/>
+                    <page id="DopeSheet.1"/>
+                    <page id="DAG.2"/>
+                </dock>
+            </splitter>
+            <split size="615"/>
+            <dock id="" activePageId="Properties.1">
+                <page id="Properties.1"/>
+                <page id="uk.co.thefoundry.backgroundrenderview.1"/>
+                <page id="Scenegraph.1"/>
+            </dock>
+        </splitter>
+    </window>
+</layout>
+}
+Root {
+ inputs 0
+ name /Users/cameronbriantarget/Local/camerontarget14/shotgrid-framing-decision-list-config/guides.nk
+ first_frame 1001
+ last_frame 1178
+ lock_range true
+ format "4096 2304 0 0 4096 2304 1 "
+ proxy_type scale
+ proxy_format "1024 778 0 0 1024 778 1 1K_Super_35(full-ap)"
+ colorManagement Nuke
+ workingSpaceLUT linear
+ monitorLut sRGB
+ monitorOutLUT rec709
+ int8Lut sRGB
+ int16Lut sRGB
+ logLut Cineon
+ floatLut linear
+ free_type_font_path /Users/cameronbriantarget/Local/resources/fonts/
+}
+Read {
+ inputs 0
+ file_type tiff
+ file /Users/cameronbriantarget/Local/HomeLab/TEST_PROJECT/TST/1_IO/4096x2304_1x_FramingChart.tiff
+ localizationPolicy on
+ format "4096 2304 0 0 4096 2304 1 "
+ origset true
+ version 12
+ name read_in
+ xpos -267
+ ypos -225
+}
+set Nb4018500 [stack 0]
+Group {
+ name PIPELINE_INFORMATION
+ note_font_size 14
+ xpos -867
+ ypos -202
+ hide_input true
+ addUserKnob {20 Reformat}
+ addUserKnob {3 cut_in l "Cut In"}
+ cut_in {{read_in.first_frame+8}}
+ addUserKnob {3 cut_out l "Cut Out"}
+ cut_out {{read_in.last_frame-7}}
+ addUserKnob {41 scale l "Shot Scale Factor" t "For Shot Scale Factor from ShotGrid" T scale1.scale}
+ addUserKnob {7 letterbox l "Letterbox Size" R 0 500}
+ letterbox 135
+}
+ Input {
+  inputs 0
+  name Input
+  xpos 285
+  ypos -195
+ }
+ Reformat {
+  format "1920 1080 0 0 1920 1080 1 HD_1080"
+  name reformat_ratio
+  xpos 285
+  ypos -107
+ }
+ Transform {
+  scale 1.2
+  center {{width/2} {height/2}}
+  name scale1
+  xpos 285
+  ypos -49
+ }
+ Crop {
+  box {{format.x} {letterbox} {format.r} {(format.t)-(crop1.box.y)}}
+  name crop1
+  xpos 285
+  ypos -1
+ }
+ Crop {
+  box {{format.x} {format.y} {format.r} {format.t}}
+  crop false
+  name crop_final1
+  xpos 285
+  ypos 43
+ }
+ Output {
+  name Output1
+  xpos 285
+  ypos 133
+ }
+end_group
+Expression {
+ inputs 0
+ expr0 "(frame <= (PIPELINE_INFORMATION.cut_in -1) || frame >= (PIPELINE_INFORMATION.cut_out +1)) ? 1 : 1\n"
+ expr1 "(frame <= (PIPELINE_INFORMATION.cut_in -1) || frame >= (PIPELINE_INFORMATION.cut_out +1)) ? 1 : 1\n"
+ expr2 "(frame <= (PIPELINE_INFORMATION.cut_in -1) || frame >= (PIPELINE_INFORMATION.cut_out +1)) ? 0 : 1"
+ channel3 rgba
+ name handles_color
+ xpos -387
+ ypos 6
+ hide_input true
+}
+CheckerBoard2 {
+ inputs 0
+ format "8192 6144 0 0 8192 6144 1 8K_CubeMap"
+ boxsize 25
+ color0 {0 0 0 1}
+ color0_panelDropped true
+ color1 {1 1 1 1}
+ color2 {0 0 0 0}
+ color3 {1 1 1 1}
+ linecolor {0.77763 1 0.086604 1}
+ centerlinecolor {0 0 0 0}
+ centerlinewidth 0
+ name CheckerBoard1
+ xpos -709
+ ypos 41
+ postage_stamp false
+}
+push $Nb4018500
+Dot {
+ name Dot3
+ xpos -233
+ ypos -87
+}
+set Nb4018f00 [stack 0]
+push 0
+CopyMetaData {
+ inputs 2
+ mergeMode "Meta only"
+ name CopyMetaData2
+ xpos -867
+ ypos -90
+}
+NoOp {
+ name wh_control
+ xpos -867
+ ypos -41
+ addUserKnob {20 User}
+ addUserKnob {14 wh l "" +STARTLINE R 0 100}
+ wh {{(read_in.width)*(1/PIPELINE_INFORMATION.scale)} {((PIPELINE_INFORMATION.reformat_ratio.height)/(PIPELINE_INFORMATION.reformat_ratio.width))*(wh_control.wh.w)*(read_in.pixel_aspect) x1001 0 x1025 0}}
+}
+set Nb4019900 [stack 0]
+Rectangle {
+ cliptype none
+ area {{"(\[metadata input/width]-(wh_control.wh.w))/2" x1025 0} {(frame_size_outter.area.y)+(frame_size_outter.area.t-frame_size_outter.area.y)*(PIPELINE_INFORMATION.letterbox/PIPELINE_INFORMATION.reformat_ratio.height) x1025 0} {(area.x)+(wh_control.wh.w)} {(frame_size_outter.area.t)-(frame_size_outter.area.t-frame_size_outter.area.y)*(PIPELINE_INFORMATION.letterbox/PIPELINE_INFORMATION.reformat_ratio.height)}}
+ color {1 1 1 1}
+ name framint_intent_outer
+ xpos -599
+ ypos -41
+}
+Rectangle {
+ inputs 0
+ cliptype none
+ area {{"framint_intent_outer.area.x + 7\n" x1024 345.5} {"framint_intent_outer.area.y + 10\n" x1024 172} {"framint_intent_outer.area.r - 7" x1024 4254.5} {"framint_intent_outer.area.t - 10\n" x1024 2888}}
+ color {1.333334 0.333334 1.333334 1}
+ color_panelDropped true
+ name framing_intent_inner
+ xpos -709
+ ypos 5
+ hide_input true
+}
+Merge2 {
+ inputs 2
+ operation out
+ name Merge4
+ xpos -599
+ ypos 5
+}
+Merge2 {
+ inputs 2
+ operation multiply
+ name Merge7
+ xpos -599
+ ypos 41
+}
+push $Nb4019900
+Rectangle {
+ cliptype none
+ area {{"(\[metadata input/width]-(wh_control.wh.w))/2" x1025 0} {"(\[metadata input/height]-(wh_control.wh.h))/2" x1025 0} {(area.x)+(wh_control.wh.w)} {(area.y)+(wh_control.wh.h)}}
+ color {1 1 1 1}
+ name frame_size_outter
+ xpos -867
+ ypos 5
+}
+Rectangle {
+ inputs 0
+ cliptype none
+ area {{"frame_size_outter.area.x + 7\n\n" x1024 345.5} {"frame_size_outter.area.y + 10\n" x1024 172} {"frame_size_outter.area.r - 7" x1024 4254.5} {"frame_size_outter.area.t - 10\n" x1024 2888}}
+ color {1.333334 0.333334 1.333334 1}
+ color_panelDropped true
+ name frame_size_inner
+ xpos -1003
+ ypos 73
+ hide_input true
+}
+Merge2 {
+ inputs 2
+ operation out
+ name Merge1
+ xpos -867
+ ypos 73
+}
+Merge2 {
+ inputs 2
+ operation under
+ name Merge6
+ xpos -599
+ ypos 73
+}
+Group {
+ name burnins2
+ note_font_size 15
+ xpos -489
+ ypos 67
+ addUserKnob {20 size l Size}
+ addUserKnob {41 translate l Offset T burnin_spacer.translate}
+ addUserKnob {7 font_scale l "Font Scale" R 0 2}
+ font_scale 0.9
+}
+ BackdropNode {
+  inputs 0
+  name Supported_Tokens
+  gl_color 0xff00ffff
+  label "\{sg_shot_code\}\n\{sg_asset_code\}\n\{sg_version_code\}\n\{sg_version_client_code\}\n\{sg_cut_in\} \{sg_cut_out\}\n\{sg_version_description\}\n\{sg_version_slate_notes\}\n\{sg_playlist_reason_for_review\}\n\{sg_playlist_code\}"
+  note_font Verdana
+  xpos 268
+  ypos 323
+  bdwidth 199
+  bdheight 146
+ }
+ BackdropNode {
+  inputs 0
+  name color_frame_counter
+  tile_color 0x328886ff
+  xpos 953
+  ypos 265
+  bdwidth 334
+  bdheight 294
+ }
+ BackdropNode {
+  inputs 0
+  name slate_info
+  tile_color 0x32365bff
+  note_font_size 42
+  xpos 590
+  ypos 321
+  bdwidth 98
+  bdheight 249
+ }
+ StickyNote {
+  inputs 0
+  name StickyNote1
+  tile_color 0xcca8ff
+  gl_color 0xb7ccff
+  label "<-- Do not delete"
+  note_font "Verdana Bold"
+  xpos 823
+  ypos 412
+ }
+ Input {
+  inputs 0
+  name Input1
+  xpos 444
+  ypos 219
+ }
+ Dot {
+  name Dot22
+  xpos 478
+  ypos 261
+ }
+set Nb404cf00 [stack 0]
+ Dot {
+  name Dot23
+  xpos 633
+  ypos 261
+ }
+ Remove {
+  name Remove2
+  xpos 599
+  ypos 279
+ }
+set Nb404d900 [stack 0]
+ Text2 {
+  font_size_toolbar 100
+  font_width_toolbar 100
+  font_height_toolbar 100
+  cliptype none
+  message "Baked Studios\n"
+  old_message {
+   {66 97 107 101 100 32 83 116 117 100 105 111 115 10}
+  }
+  box {{burnin_spacer.translate.x} {burnin_spacer.translate.y} 2000 400}
+  yjustify bottom
+  transforms {
+   {0 2}
+  }
+  cursor_position 13
+  font {{ Arial : Regular : arial.ttf : 0 }}
+  global_font_scale {{parent.font_scale}}
+  scale {1 1}
+  cursor_initialised true
+  autofit_bbox false
+  initial_cursor_position {
+   {21 79.5}
+  }
+  group_animations {
+   {0}
+   imported:
+   0
+   selected:
+   items:
+   "root transform"
+  }
+  animation_layers {
+   {1 11 1024 778 0 0 1 1 0 0 0 0}
+  }
+  color 0.7
+  background_opacity 0.75
+  enable_shadows true
+  shadow_angle -45
+  shadow_distance 2
+  shadow_softness 1
+  shadow_size 1
+  name bottom_left
+  note_font Verdana
+  note_font_size 14
+  xpos 599
+  ypos 347
+  disable true
+ }
+ Text2 {
+  font_size_toolbar 100
+  font_width_toolbar 100
+  font_height_toolbar 100
+  cliptype none
+  box {0 {burnin_spacer.translate.y} {format.r} 400}
+  xjustify center
+  yjustify bottom
+  transforms {
+   {0 2}
+  }
+  font {{ Arial : Regular : arial.ttf : 0 }}
+  global_font_scale {{parent.font_scale}}
+  scale {1 1}
+  cursor_initialised true
+  autofit_bbox false
+  initial_cursor_position {
+   {21 79.5}
+  }
+  group_animations {
+   {0}
+   imported:
+   0
+   selected:
+   items:
+   "root transform"
+  }
+  animation_layers {
+   {1 11 1024 778 0 0 1 1 0 0 0 0}
+  }
+  color 0.7
+  background_opacity 0.75
+  enable_shadows true
+  shadow_angle -45
+  shadow_distance 2
+  shadow_softness 1
+  shadow_size 1
+  name bottom_center
+  note_font_size 14
+  xpos 599
+  ypos 375
+  disable true
+ }
+ Text2 {
+  font_size_toolbar 100
+  font_width_toolbar 100
+  font_height_toolbar 100
+  cliptype none
+  message "\[format %04d \[expression \{\[frame] - 0\}]] / \[expression \{\[value read_in.last] \}]"
+  old_message {
+   {49 48 48 53 32 47 32 49 48 53 51}
+  }
+  old_expression_markers {
+   {0 3 7 10}
+  }
+  box {-2000 {burnin_spacer.translate.y} {"format.r - burnin_spacer.translate.x"} 400}
+  xjustify right
+  yjustify bottom
+  transforms {
+   {0 2}
+  }
+  font_size_values {
+   {0 100 1 100 2 100 3 100 0 99 1 99 2 99 3 99}
+  }
+  font {{ Arial : Regular : arial.ttf : 0 }}
+  global_font_scale {{parent.font_scale}}
+  center {1024 778}
+  cursor_initialised true
+  autofit_bbox false
+  initial_cursor_position {
+   {1879.5 70.5}
+  }
+  group_animations {
+   {0}
+   imported:
+   0
+   selected:
+   items:
+   "root transform/"
+  }
+  animation_layers {
+   {1 11 1024 778 0 0 1 1 0 0 0 0}
+  }
+  color 0.7
+  background_opacity 0.75
+  enable_shadows true
+  shadow_angle -45
+  shadow_distance 2
+  shadow_softness 1
+  shadow_size 1
+  name bottom_right
+  note_font_size 14
+  xpos 599
+  ypos 401
+  disable true
+ }
+ Text2 {
+  font_size_toolbar 100
+  font_width_toolbar 100
+  font_height_toolbar 100
+  cliptype none
+  message "\{sg_version_code\}ff"
+  old_message {
+   {123 115 103 95 118 101 114 115 105 111 110 95 99 111 100 101 125 102 102}
+  }
+  box {{burnin_spacer.translate.x} -200 2000 {"format.t - burnin_spacer.translate.y"}}
+  transforms {
+   {0 2}
+  }
+  font_size_values {
+   {0 100 1 100 2 100 0 99}
+  }
+  cursor_position 19
+  font {{ Arial : Regular : arial.ttf : 0 }}
+  global_font_scale {{parent.font_scale}}
+  center {1024 778}
+  cursor_initialised true
+  autofit_bbox false
+  initial_cursor_position {
+   {22 1062.5}
+  }
+  group_animations {
+   {0}
+   imported:
+   0
+   selected:
+   items:
+   "root transform/"
+  }
+  animation_layers {
+   {1 11 1024 778 0 0 1 1 0 0 0 0}
+  }
+  color 0.7
+  background_opacity 0.75
+  enable_shadows true
+  shadow_angle -45
+  shadow_distance 2
+  shadow_softness 1
+  shadow_size 1
+  name top_left
+  note_font_size 14
+  xpos 599
+  ypos 425
+  disable true
+ }
+ Text2 {
+  font_size_toolbar 100
+  font_width_toolbar 100
+  font_height_toolbar 100
+  cliptype none
+  box {0 -200 {format.r} {"format.t - burnin_spacer.translate.y"}}
+  xjustify center
+  transforms {
+   {0 2}
+  }
+  font {{ Arial : Regular : arial.ttf : 0 }}
+  global_font_scale {{parent.font_scale}}
+  center {1024 778}
+  cursor_initialised true
+  autofit_bbox false
+  initial_cursor_position {
+   {22 1062.5}
+  }
+  group_animations {
+   {0}
+   imported:
+   0
+   selected:
+   items:
+   "root transform/"
+  }
+  animation_layers {
+   {1 11 1024 778 0 0 1 1 0 0 0 0}
+  }
+  color 0.7
+  background_opacity 0.75
+  enable_shadows true
+  shadow_angle -45
+  shadow_distance 2
+  shadow_softness 1
+  shadow_size 1
+  name top_center
+  note_font_size 14
+  xpos 599
+  ypos 455
+  disable true
+ }
+ Text2 {
+  font_size_toolbar 100
+  font_width_toolbar 100
+  font_height_toolbar 100
+  cliptype none
+  message "\[date %Y]/\[date %m]/\[date %d]"
+  old_message {
+   {50 48 50 52 47 49 48 47 48 51}
+  }
+  old_expression_markers {
+   {0 3 5 6 8 9}
+  }
+  box {-2000 -200 {"format.r - burnin_spacer.translate.x"} {"format.t - burnin_spacer.translate.y"}}
+  xjustify right
+  transforms {
+   {0 2}
+  }
+  font_size_values {
+   {5 100 6 100 7 100 8 100 9 100 5 99 6 99 7 99 8 99 9 99}
+  }
+  cursor_position 29
+  font {{ Arial : Regular : arial.ttf : 0 }}
+  global_font_scale {{parent.font_scale}}
+  center {1024 778}
+  cursor_initialised true
+  autofit_bbox false
+  initial_cursor_position {
+   {1896 1063.5}
+  }
+  group_animations {
+   {0}
+   imported:
+   0
+   selected:
+   items:
+   "root transform/"
+  }
+  animation_layers {
+   {1 11 1024 778 0 0 1 1 0 0 0 0}
+  }
+  color 0.7
+  background_opacity 0.75
+  enable_shadows true
+  shadow_angle -45
+  shadow_distance 2
+  shadow_softness 1
+  shadow_size 1
+  name top_right
+  note_font_size 14
+  xpos 599
+  ypos 479
+  disable true
+ }
+push $Nb404d900
+ Dot {
+  name Dot1
+  xpos 1182
+  ypos 286
+ }
+ Text2 {
+  font_size_toolbar 100
+  font_width_toolbar 100
+  font_height_toolbar 100
+  cliptype none
+  message "\[format %04d \[expression \{\[frame] - 0\}]] / \[expression \{\[value read_in.last] \}]"
+  old_message {
+   {49 48 48 49 32 47 32 49}
+  }
+  old_expression_markers {
+   {0 3 7 7}
+  }
+  box {-2000 {burnin_spacer.translate.y} {"format.r - burnin_spacer.translate.x"} 400}
+  xjustify right
+  yjustify bottom
+  transforms {
+   {0 2}
+  }
+  font_size_values {
+   {1 100 2 100 3 100 1 99 2 99 3 99}
+  }
+  font {{ Arial : Regular : Supplemental/Arial.ttf : 0 }}
+  global_font_scale {{parent.font_scale}}
+  center {1024 778}
+  cursor_initialised true
+  autofit_bbox false
+  initial_cursor_position {
+   {1879.5 70.5}
+  }
+  group_animations {
+   {0}
+   imported:
+   0
+   selected:
+   items:
+   "root transform/"
+  }
+  animation_layers {
+   {1 11 1024 778 0 0 1 1 0 0 0 0}
+  }
+  color 0.7
+  background_opacity 0.75
+  enable_shadows true
+  shadow_angle -45
+  shadow_distance 2
+  shadow_softness 1
+  shadow_size 1
+  name FRAMECOUNTER1
+  xpos 1148
+  ypos 367
+ }
+ Dot {
+  name Dot2
+  xpos 1182
+  ypos 513
+ }
+ Merge2 {
+  inputs 2
+  name Merge2
+  xpos 599
+  ypos 510
+ }
+ Dot {
+  name Dot12
+  xpos 633
+  ypos 544
+ }
+push $Nb404cf00
+ Merge2 {
+  inputs 2
+  mix {{curve x1000 0 1}}
+  name Merge3
+  xpos 444
+  ypos 541
+ }
+ Output {
+  name Output1
+  xpos 444
+  ypos 590
+ }
+ Transform {
+  inputs 0
+  translate {{"framing_intent_inner.area.x +10"} {"framing_intent_inner.area.y +15"}}
+  black_outside false
+  name burnin_spacer
+  xpos 735
+  ypos 413
+ }
+end_group
+Merge2 {
+ inputs 2
+ operation multiply
+ name Merge3
+ xpos -387
+ ypos 73
+}
+push $Nb4018f00
+Merge2 {
+ inputs 2
+ mix 0.215
+ name Merge2
+ xpos -267
+ ypos 73
+}
+Write {
+ file_type exr
+ first_part rgba
+ version 2
+ ocioColorspace scene_linear
+ display default
+ view sRGB
+ name Write1
+ xpos -267
+ ypos 136
+}
+Viewer {
+ frame 1
+ frame_range 1001-1178
+ monitorOutNDISenderName "Nuke - guides - Viewer1"
+ monitorOutOutputTransform rec709
+ name Viewer1
+ xpos -267
+ ypos 184
+}
+NoOp {
+ inputs 0
+ name FDL_Importer
+ selected true
+ xpos -865
+ ypos -242
+ hide_input true
+ addUserKnob {20 User}
+ addUserKnob {2 fdl_file l "FDL File"}
+ fdl_file /Users/cameronbriantarget/Local/HomeLab/TEST_PROJECT/TST/1_IO/4096x2304_1x_FramingChart.fdl
+ addUserKnob {22 load_fdl l "Load FDL" -STARTLINE T "\nimport os\nimport json\nimport nuke\n\ndef load_fdl():\n    n = nuke.thisNode()\n    fdl_file = n\['fdl_file'].value()\n    \n    if not fdl_file or not os.path.exists(fdl_file):\n        nuke.message(\"Please select a valid FDL file.\")\n        return\n    \n    try:\n        # Load the FDL file\n        with open(fdl_file, 'r') as f:\n            fdl_data = json.load(f)\n        \n        # Update metadata knobs\n        n\['fdl_uuid'].setValue(fdl_data.get(\"uuid\", \"\"))\n        version = fdl_data.get(\"version\", \{\})\n        version_str = f\"\{version.get('major', 0)\}.\{version.get('minor', 0)\}\"\n        n\['fdl_version'].setValue(version_str)\n        n\['fdl_creator'].setValue(fdl_data.get(\"fdl_creator\", \"\"))\n        \n        # Get the default framing intent\n        default_intent_id = fdl_data.get(\"default_framing_intent\", \"1\")\n        framing_intents = fdl_data.get(\"framing_intents\", \[])\n        \n        # Find the default framing intent\n        default_intent = None\n        for intent in framing_intents:\n            if intent.get(\"id\") == default_intent_id:\n                default_intent = intent\n                break\n        \n        if not default_intent and framing_intents:\n            default_intent = framing_intents\[0]\n        \n        if default_intent:\n            # Update framing intent knobs\n            n\['intent_id'].setValue(default_intent.get(\"id\", \"\"))\n            \n            # Update aspect ratio\n            aspect_ratio = default_intent.get(\"aspect_ratio\", \{\})\n            ar_width = aspect_ratio.get(\"width\", 0)\n            ar_height = aspect_ratio.get(\"height\", 0)\n            \n            if ar_width and ar_height:\n                n\['aspect_ratio'].setValue(f\"\{ar_width\}:\{ar_height\}\")\n                n\['aspect_ratio_w'].setValue(ar_width)\n                n\['aspect_ratio_h'].setValue(ar_height)\n            \n            # Update protection\n            n\['protection'].setValue(default_intent.get(\"protection\", 0.0))\n        \n        # Get the first context and canvas\n        contexts = fdl_data.get(\"contexts\", \[])\n        if contexts:\n            context = contexts\[0]\n            canvases = context.get(\"canvases\", \[])\n            \n            if canvases:\n                canvas = canvases\[0]\n                \n                # Update canvas dimensions\n                canvas_dimensions = canvas.get(\"dimensions\", \{\})\n                canvas_width = canvas_dimensions.get(\"width\", 0)\n                canvas_height = canvas_dimensions.get(\"height\", 0)\n                \n                if canvas_width and canvas_height:\n                    n\['canvas_dimensions'].setValue(f\"\{canvas_width\}x\{canvas_height\}\")\n                    n\['canvas_width'].setValue(canvas_width)\n                    n\['canvas_height'].setValue(canvas_height)\n                \n                # Update anamorphic squeeze\n                n\['anamorphic_squeeze'].setValue(canvas.get(\"anamorphic_squeeze\", 1.0))\n                \n                # Get the first framing decision\n                framing_decisions = canvas.get(\"framing_decisions\", \[])\n                \n                if framing_decisions:\n                    decision = framing_decisions\[0]\n                    \n                    # Update frame dimensions\n                    frame_dimensions = decision.get(\"dimensions\", \{\})\n                    frame_width = frame_dimensions.get(\"width\", 0)\n                    frame_height = frame_dimensions.get(\"height\", 0)\n                    \n                    if frame_width and frame_height:\n                        n\['frame_dimensions'].setValue(f\"\{frame_width\}x\{frame_height\}\")\n                        n\['frame_width'].setValue(frame_width)\n                        n\['frame_height'].setValue(frame_height)\n                    \n                    # Update anchor point\n                    anchor_point = decision.get(\"anchor_point\", \{\})\n                    anchor_x = anchor_point.get(\"x\", 0)\n                    anchor_y = anchor_point.get(\"y\", 0)\n                    \n                    if anchor_x is not None and anchor_y is not None:\n                        n\['anchor_point'].setValue(f\"\{anchor_x\},\{anchor_y\}\")\n                        n\['anchor_x'].setValue(anchor_x)\n                        n\['anchor_y'].setValue(anchor_y)\n        \n        nuke.message(f\"Successfully loaded FDL: \{os.path.basename(fdl_file)\}\")\n        \n    except Exception as e:\n        nuke.message(f\"Error loading FDL file: \{str(e)\}\")\n\nload_fdl()\n"}
+ addUserKnob {26 divider1 l "" +STARTLINE}
+ addUserKnob {26 fdl_info l "FDL Information"}
+ addUserKnob {1 fdl_uuid l UUID}
+ fdl_uuid 08a29ea0-2be1-4650-844d-0bc7ebef005e
+ addUserKnob {1 fdl_version l Version}
+ fdl_version 1.1
+ addUserKnob {1 fdl_creator l Creator}
+ fdl_creator "Netflix Production Technology Tools"
+ addUserKnob {26 divider2 l "" +STARTLINE}
+ addUserKnob {26 intent_heading l "Framing Intent"}
+ addUserKnob {1 intent_id l "Intent ID"}
+ intent_id 1
+ addUserKnob {1 aspect_ratio l "Aspect Ratio"}
+ aspect_ratio 160:67
+ addUserKnob {3 aspect_ratio_w l Width}
+ aspect_ratio_w 160
+ addUserKnob {3 aspect_ratio_h l Height}
+ aspect_ratio_h 67
+ addUserKnob {7 protection l Protection}
+ addUserKnob {26 divider3 l "" +STARTLINE}
+ addUserKnob {26 canvas_heading l "Canvas & Framing"}
+ addUserKnob {1 canvas_dimensions l "Canvas Size"}
+ canvas_dimensions 4096x2304
+ addUserKnob {3 canvas_width l "Canvas Width"}
+ canvas_width 4096
+ addUserKnob {3 canvas_height l "Canvas Height"}
+ canvas_height 2304
+ addUserKnob {7 anamorphic_squeeze l "Anamorphic Squeeze"}
+ anamorphic_squeeze 1
+ addUserKnob {1 frame_dimensions l "Frame Size"}
+ frame_dimensions 3840x1608
+ addUserKnob {3 frame_width l "Frame Width"}
+ frame_width 3840
+ addUserKnob {3 frame_height l "Frame Height"}
+ frame_height 1608
+ addUserKnob {1 anchor_point l "Anchor Point"}
+ anchor_point 128,348
+ addUserKnob {3 anchor_x l "Anchor X"}
+ anchor_x 128
+ addUserKnob {3 anchor_y l "Anchor Y"}
+ anchor_y 348
+}

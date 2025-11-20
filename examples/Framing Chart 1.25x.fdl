@@ -1,0 +1,62 @@
+{
+  "uuid": "71ae795e-846f-40d9-9c54-6ed6c983dd0c",
+  "version": {
+    "major": 1,
+    "minor": 1
+  },
+  "fdl_creator": "Netflix Production Technology Tools",
+  "default_framing_intent": "1",
+  "framing_intents": [
+    {
+      "label": "",
+      "id": "1",
+      "aspect_ratio": {
+        "width": 2060,
+        "height": 1159
+      },
+      "protection": 0.25
+    }
+  ],
+  "contexts": [
+    {
+      "label": "ARRI ALEXA 265",
+      "context_creator": "Netflix Production Technology Tools",
+      "canvases": [
+        {
+          "label": "5.1K",
+          "id": "1",
+          "source_canvas_id": "1",
+          "dimensions": {
+            "width": 4120,
+            "height": 2880
+          },
+          "effective_dimensions": null,
+          "anamorphic_squeeze": 1.25,
+          "framing_decisions": [
+            {
+              "label": "",
+              "id": "1-1",
+              "framing_intent_id": "1",
+              "dimensions": {
+                "width": 3072,
+                "height": 2160
+              },
+              "anchor_point": {
+                "x": 524,
+                "y": 360
+              },
+              "protection_dimensions": {
+                "width": 4096,
+                "height": 2880
+              },
+              "protection_anchor_point": {
+                "x": 12,
+                "y": 0
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
